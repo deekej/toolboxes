@@ -1,0 +1,41 @@
+---
+# vim: filetype=yaml.ansible
+
+- name: "Check the configuration for Toolbox: {{ toolbox.name }}"
+  fail:
+    msg: "'image' and 'distro/release' are mutually exclusive"
+  when: >
+    (toolbox.image is defined and toolbox.distro is defined) or
+    (toolbox.image is defined and toolbox.release is defined)
+
+# -----------------------------------------------------------------------------
+
+- name: "Prepare option for creating of new '{{ toolbox.name }}' Toolbox: --assumeyes"
+  set_fact:
+    create_options: '--assumeyes'
+
+- name: "Prepare option for creating of new '{{ toolbox.name }}' Toolbox: --image"
+  set_fact:
+    create_options: "{{ create_options }} --image {{ toolbox.image }}"
+  when: toolbox.image is defined
+
+- name: "Prepare option for creating of new '{{ toolbox.name }}' Toolbox: --distro"
+  set_fact:
+    create_options: "{{ create_options }} --distro {{ toolbox.distro }}"
+  when: toolbox.distro is defined
+
+- name: "Prepare option for creating of new '{{ toolbox.name }}' Toolbox: --release"
+  set_fact:
+    create_options: "{{ create_options }} --release {{ toolbox.release }}"
+  when: toolbox.release is defined
+
+# -----------------------------------------------------------------------------
+
+- name: "Create a new Toolbox: {{ toolbox.name }}"
+  command:      toolbox create {{ create_options }} {{toolbox.name}}
+  register:     create_reg
+  changed_when: "'Created container: ' ~ toolbox.name|string in create_reg.stdout"
+  failed_when:
+    - "'Created container: ' ~ toolbox.name|string not in create_reg.stdout"
+    - "'Error: container ' ~ toolbox.name|string ~ ' already exists' not in create_reg.stderr"
+

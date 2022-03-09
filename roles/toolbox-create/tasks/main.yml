@@ -1,0 +1,8 @@
+---
+# vim: filetype=yaml.ansible
+
+- name: Create new Toolboxes
+  include_tasks: create.yml
+  loop: "{{ toolboxes }}"
+  loop_control:
+    loop_var: toolbox

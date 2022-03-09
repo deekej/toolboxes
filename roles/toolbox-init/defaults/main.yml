@@ -1,0 +1,32 @@
+---
+# vim: filetype=yaml.ansible
+
+packages_base:
+  - ansible
+  - ascii
+  - autojump-zsh
+  - colordiff
+  - ctags
+  - fzf
+  - gh
+  - git
+  - git-lfs
+  - python-msgpack
+  - python-neovim
+  - task
+  - thefuck
+  - vim
+  - vim-enhanced
+  - vim-X11
+  - xclip
+  - zsh
+  - zsh-autosuggestions
+  - zsh-lovers
+  - zsh-syntax-highlighting
+
+#pip_packages_base:  []
+#commands_pre_init:  []
+
+commands_post_init:
+  - fc-cache -f -v
+  - sudo fc-cache -f -v

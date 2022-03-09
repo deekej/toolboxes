@@ -1,0 +1,5 @@
+---
+# vim: filetype=yaml.ansible
+
+toolbox_default_name: "fedora-toolbox-{{ ansible_distribution_version }}"
+toolboxes: []

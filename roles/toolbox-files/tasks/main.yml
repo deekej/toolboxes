@@ -1,0 +1,10 @@
+---
+# vim: filetype=yaml.ansible
+
+- name: Copy requested files into Toolboxes
+  include_tasks:  copy.yml
+  loop:           "{{ toolboxes }}"
+  loop_control:
+    loop_var:     toolbox
+    label:        "{{ toolbox.name }}"
+  when:           toolbox.files_to_copy is defined

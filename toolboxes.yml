@@ -1,0 +1,41 @@
+---
+# vim: filetype=yaml.ansible
+
+- hosts: localhost
+  connection: local
+  vars:
+    force:       false
+    cleanup:     false
+    md_refresh:  false
+    silverblue:  false
+
+  pre_tasks:
+    # Unfortunately, Ansible is parsing /etc/redhat-release instead of /etc/os-release.
+    - name: Get current OS details from /etc/os-release
+      command:      cat /etc/os-release
+      register:     os_release
+      changed_when: false
+
+    - name: Check if we are using Fedora Silverblue
+      set_fact:
+        silverblue: true
+      when: "'VARIANT=\"Silverblue\"' in os_release.stdout"
+
+    - name: Make sure the Toolbox is installed on this machine
+      package:
+        name: toolbox
+        state: present
+      when: not silverblue|bool
+
+  # ---------------------------------------------------------------------------
+
+  roles:
+    - toolbox-cleanup   # Deletes previously created Toolboxes
+    - toolbox-create    # Creates requested Toolboxes
+    - toolbox-init      # Install default packages / copy default configuration
+    - toolbox-files     # Copy additional files into Toolboxes
+    - toolbox-packages  # Install additional packages into Toolboxes
+    #- toolbox-backup    # Create a backup of Toolboxes
+
+    #- toolbox-update
+    #- toolbox-restore
