@@ -1,0 +1,73 @@
+---
+# vim: filetype=yaml.ansible
+
+- name: "Run pre-init commands inside all Toolboxes"
+  shell:        toolbox run --container {{ item.0.name }} {{ item.1 }}
+  when:         (commands_pre_init is defined) and (commands_pre_init|length > 0)
+  with_nested:
+    - "{{ toolboxes }}"
+    - "{{ commands_pre_init }}"
+  loop_control:
+    label:      "{{ item.1 }}"
+
+# -----------------------------------------------------------------------------
+
+- name: Start the update of DNF metadata inside the Toolboxes [async]
+  command:      toolbox run --container {{ toolbox.name }} sudo dnf updateinfo --refresh
+  when:         md_refresh|bool
+  loop:         "{{ toolboxes }}"
+  loop_control:
+    loop_var:   toolbox
+    label:      "{{ toolbox.name }}"
+  register:     async_dnf_refresh
+  async:        300
+  poll:         0
+
+- name: Wait for all [async] tasks to finish
+  async_status:
+    jid:        "{{ dnf_refresh.ansible_job_id }}"
+  loop:         "{{ async_dnf_refresh.results }}"
+  loop_control:
+    loop_var:   dnf_refresh
+    label:      "{{ dnf_refresh.toolbox.name }}"
+  register:     async_wait
+  until:        async_wait.finished
+  when:         md_refresh|bool
+  delay:        3
+  retries:      100
+
+# -----------------------------------------------------------------------------
+
+- name: Start installation of base packages inside the Toolboxes [async]
+  command:      toolbox run --container {{ toolbox.name }} sudo dnf install --assumeyes {{ packages_base | join(' ') }}
+  loop:         "{{ toolboxes }}"
+  loop_control:
+    loop_var:   toolbox
+    label:      "{{ toolbox.name }}"
+  changed_when: false
+  register:     async_dnf_install
+  async:        900
+  poll:         0
+
+- name: Wait for all [async] tasks to finish
+  async_status:
+    jid:        "{{ dnf_install.ansible_job_id }}"
+  loop:         "{{ async_dnf_install.results }}"
+  loop_control:
+    loop_var:   dnf_install
+    label:      "{{ dnf_install.toolbox.name }}"
+  register:     async_wait
+  until:        async_wait.finished
+  delay:        3
+  retries:      300
+
+# -----------------------------------------------------------------------------
+
+- name: "Run post-init commands inside all Toolboxes"
+  shell:        toolbox run --container {{ item.0.name }} {{ item.1 }}
+  when:         (commands_post_init is defined) and (commands_post_init|length > 0)
+  with_nested:
+    - "{{ toolboxes }}"
+    - "{{ commands_post_init }}"
+  loop_control:
+    label:      "{{ item.0.name }}: {{ item.1 }}"

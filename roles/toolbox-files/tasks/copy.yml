@@ -1,0 +1,40 @@
+---
+# vim: filetype=yaml.ansible
+
+- name: "Run additional pre-copy-files commands inside Toolbox: {{ toolbox.name }}"
+  shell:        toolbox run --container {{ toolbox.name }} {{ item }}
+  loop:         "{{ toolbox.commands_pre_files }}"
+  loop_control:
+    label:      "{{ item }}"
+  when:         toolbox.commands_pre_files is defined
+
+# -----------------------------------------------------------------------------
+
+- name: "Copy requested files into Toolbox: {{ toolbox.name }}"
+  command:      toolbox run --container {{ toolbox.name }} sudo cp -rv "{{ item.src }}" "{{ item.dest }}"
+  loop:         "{{ toolbox.files_to_copy }}"
+  loop_control:
+    label:      "{{ item.src }} -> {{ toolbox.name }}:{{ item.dest }}"
+
+- name: "Set correct file permissions for copied files inside Toolbox: {{ toolbox.name }}"
+  command:      toolbox run --container {{ toolbox.name }} sudo chmod {{ item.mode }} "{{ item.dest }}"
+  loop:         "{{ toolbox.files_to_copy }}"
+  loop_control:
+    label:      "chmod '{{ item.mode | default('N/A') }}' {{ toolbox.name }}:{{ item.dest }}"
+  when:         item.mode is defined
+
+- name: "Set correct file ownership for copied files inside Toolbox: {{ toolbox.name }}"
+  command:      toolbox run --container {{ toolbox.name }} sudo chown {{ item.owner }}:{{ item.group }} "{{ item.dest }}"
+  loop:         "{{ toolbox.files_to_copy }}"
+  loop_control:
+    label:      "chown {{ item.owner | default('N') }}:{{ item.group | default('A') }} {{ toolbox.name }}:{{ item.dest }}"
+  when:         (item.owner is defined) and (item.group is defined)
+
+# -----------------------------------------------------------------------------
+
+- name: "Run additional post-copy-files commands inside Toolbox: {{ toolbox.name }}"
+  shell:        toolbox run --container {{ toolbox.name }} {{ item }}
+  loop:         "{{ toolbox.commands_post_files }}"
+  loop_control:
+    label:      "{{ item }}"
+  when:         toolbox.commands_post_files is defined

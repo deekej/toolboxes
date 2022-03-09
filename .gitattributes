@@ -1,0 +1,2 @@
+files/usr/bin/oc filter=lfs diff=lfs merge=lfs -text
+files/usr/bin/kubectl filter=lfs diff=lfs merge=lfs -text

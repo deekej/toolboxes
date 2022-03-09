@@ -1,0 +1,11 @@
+---
+# vim: filetype=yaml.ansible
+
+- name: Remove previously created Toolboxes
+  command:      toolbox rm -f {{ item.name }}
+  when:         cleanup|bool
+  register:     cleanup_reg
+  changed_when: "'failed to inspect container' not in cleanup_reg.stderr"
+  loop:         "{{ toolboxes }}"
+  loop_control:
+    label:      "{{ item.name }}"

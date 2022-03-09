@@ -1,0 +1,521 @@
+---
+# vim: filetype=yaml.ansible
+
+# ===| Toolboxes Configuration |===============================================
+toolboxes:
+  # ---| default toolbox |-----------------------------------------------------
+  - name:     "{{ toolbox_default_name }}"
+    #image:    'fedora-toolbox:35'     # Mutually exclusive with distro & release...
+    #distro:   fedora
+    #release:  f36
+
+    backup:   false               # Make a backup after fresh Toolbox init
+    update:   true                # Update the packages installed inside Toolbox
+
+    # ---------------------------
+
+    # Configuration commands to run before copying of files:
+    #commands_pre_files:
+    #  - mkdir -p /path/to/dir
+
+    # Additional files to copy into the Toolbox:
+    #files_to_copy:
+    #  - src:    files/path/to/local/file           # Mandatory
+    #    dest:   /full/path/to/file/in/container    # Mandatory
+    #    mode:   '0644'                             # Optional
+    #    owner:  root                               # Optional
+    #    group:  root                               # Optional
+
+    # Configuration commands to run before copying of files:
+    #commands_post_files:
+    #  - echo "Hello World!"
+
+    # ---------------------------
+
+    # Configuration commands to run inside Toolbox before packages installation:
+    #commands_pre_packages:
+    #  - echo "Hello World!"
+
+    # Package groups to install:
+    #package_groups:
+    #  - "{{ packages_base }}"
+
+    # PIP package groups to install:
+    #pip_package_groups:
+    #  - "{{ pip_packages_base }}"
+
+    # Configuration commands to run inside Toolbox after packages installation:
+    #commands_post_packages:
+    #  - echo "Hello World!"
+
+  # ---| devel toolbox |-------------------------------------------------------
+  - name:     devel
+    backup:   true
+    update:   true
+
+    package_groups:
+      - "{{ packages_devel }}"
+
+  # ---| packaging toolbox |---------------------------------------------------
+  - name:     packaging
+    backup:   true
+    update:   true
+
+    package_groups:
+      - "{{ packages_devel }}"
+      - "{{ packages_packaging }}"
+
+  # ---| redhat toolbox |------------------------------------------------------
+  - name:     redhat
+    backup:   true
+    update:   true
+
+    # ---------------------------
+
+    files_to_copy:
+      - src:    files/etc/yum.repos.d/redhat-exdtools.repo
+        dest:   /etc/yum.repos.d/redhat-exdtools.repo
+        mode:   '0644'
+        owner:  root
+        group:  root
+
+      - src:    files/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-exd-internal
+        dest:   /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-exd-internal
+        mode:   '0644'
+        owner:  root
+        group:  root
+
+      - src:    files/etc/pki/ca-trust/source/anchors/redhat-root.crt
+        dest:   /etc/pki/ca-trust/source/anchors/redhat-root.crt
+        mode:   '0644'
+        owner:  root
+        group:  root
+
+      - src:    files/etc/dnf/plugins/debuginfo-install.conf
+        dest:   /etc/dnf/plugins/debuginfo-install.conf
+        mode:   '0644'
+        owner:  root
+        group:  root
+
+      - src:    files/usr/bin/kubectl
+        dest:   /usr/bin/kubectl
+        mode:   '0755'
+        owner:  root
+        group:  root
+
+      - src:    files/usr/bin/oc
+        dest:   /usr/bin/oc
+        mode:   '0755'
+        owner:  root
+        group:  root
+
+    commands_post_files:
+      - sudo update-ca-trust
+      - sudo dnf updateinfo --refresh
+
+    # ---------------------------
+
+    package_groups:
+      - "{{ packages_redhat }}"
+
+    #pip_package_groups:
+    #  - "{{ pip_packages_base }}"
+
+# ===| Packages Groups for Toolboxes |=========================================
+
+# You can override the default base packages here:
+#packages_base:
+#  -
+
+packages_devel:
+  - autoconf
+  - automake
+  - ccache
+  - cgdb
+  - check
+  - clang
+  - cloc
+  - cmake
+  - cppcheck
+  - dialog
+  - dialog-devel
+  - doxygen
+  - doxygen-doxywizard
+  - elfutils-devel
+  - elfutils-libelf-devel
+  - expat-devel
+  - gcc-c++
+  - git-lfs
+  - gmp-devel
+  - golang
+  - golang-bin
+  - golang-src
+  - indent
+  - llvm
+  - ltrace
+  - m4
+  - make
+  - mpfr-devel
+  - nasm
+  - ncurses-devel
+  - ncurses-static
+  - osbs-client
+  - patchutils
+  - php
+  - php-cli
+  - php-json
+  - pylint
+  - python3-devel
+  - python3-extras
+  - python3-numpy
+  - python3-numpy-f2py
+  - python3-pylint
+  - python3-pytest
+  - python3-pytest-runner
+  - redis
+  - rfcdiff
+  - ruby
+  - rubygems
+  - rubypick
+  - ShellCheck
+  - splint
+  - sqlite-devel
+  - strace
+  - valgrind
+#  - alex
+#  - bison
+#  - bison-devel
+#  - byacc
+#  - cracklib-devel
+#  - cracklib-dicts
+#  - flex
+#  - gettext-common-devel
+#  - gettext-devel
+#  - happy
+#  - haskell-platform
+#  - vagrant
+#  - vagrant-libvirt
+
+packages_redhat:
+  - brewkoji
+  - brewkoji-stage
+  - git-review
+  - python3-pip
+  - rhpkg
+  - rhpkg-stage
+  - krb5-workstation
+  - pass
+  - pass-otp
+  - wl-clipboard
+
+packages_packaging:
+  - annobin
+  - bodhi-client
+  - fedora-packager
+  - fedora-packager-yubikey
+  - fedora-review
+  - fedora-rpm-macros
+  - fedpkg
+  - git2cl
+  - git-email
+  - git-filter-repo
+  - intltool
+  - go-srpm-macros
+  - cmake-rpm-macros
+  - koji
+  - krb5-workstation
+  - libabigail
+  - libabigail-doc
+  - licensecheck
+  - mock
+  - mock-core-configs
+  - nosync
+  - pax
+  - pybugz
+  - python-devel
+  - python-rpm-macros
+  - python-srpm-macros
+  - python3-rpm-macros
+  - rpm-build
+  - rpm-devel
+  - rpmdevtools
+  - rpmlint
+  - texinfo
+  - texinfo-tex
+  - xapps
+#  - csdiff
+#  - csmock
+#  - cswrap
+#  - netpbm
+#  - netpbm-progs
+
+packages_packaging_fonts:
+  - fontconfig-devel
+  - fontforge
+  - fonts-rpm-macros
+  - fonts-rpm-templates
+  - fonts-srpm-macros
+  - gucharmap
+
+packages_latex:
+  - doxygen-latex
+  - latex2html
+  - texlive-ae
+  - texlive-algorithms
+  - texlive-amscls
+  - texlive-amsfonts
+  - texlive-amsmath
+  - texlive-anysize
+  - texlive-appendix
+  - texlive-attachfile
+  - texlive-auto-pst-pdf
+  - texlive-avantgar
+  - texlive-babel
+  - texlive-babelbib
+  - texlive-babel-english
+  - texlive-base
+  - texlive-beamer
+  - texlive-bera
+  - texlive-beton
+  - texlive-bibtex
+  - texlive-bidi
+  - texlive-bookman
+  - texlive-booktabs
+  - texlive-breakurl
+  - texlive-breqn
+  - texlive-caption
+  - texlive-carlisle
+  - texlive-changepage
+  - texlive-charter
+  - texlive-chngcntr
+  - texlive-cite
+  - texlive-cm
+  - texlive-cmap
+  - texlive-cmextra
+  - texlive-cm-super
+  - texlive-collection-basic
+  - texlive-collection-fontsrecommended
+  - texlive-collection-latex
+  - texlive-collection-latexrecommended
+  - texlive-colorprofiles
+  - texlive-colortbl
+  - texlive-courier
+  - texlive-crop
+  - texlive-csquotes
+  - texlive-ctable
+  - texlive-currfile
+  - texlive-dehyph
+  - texlive-dvipdfmx
+  - texlive-dvipng
+  - texlive-dvips
+  - texlive-ec
+  - texlive-enctex
+  - texlive-enumitem
+  - texlive-environ
+  - texlive-epsf
+  - texlive-epstopdf
+  - texlive-eso-pic
+  - texlive-etex
+  - texlive-etex-pkg
+  - texlive-etoolbox
+  - texlive-euenc
+  - texlive-euler
+  - texlive-euro
+  - texlive-euro-ce
+  - texlive-eurosym
+  - texlive-extsizes
+  - texlive-fancybox
+  - texlive-fancyhdr
+  - texlive-fancyref
+  - texlive-fancyvrb
+  - texlive-filecontents
+  - texlive-filehook
+  - texlive-finstrut
+  - texlive-fix2col
+  - texlive-float
+  - texlive-fontspec
+  - texlive-footmisc
+  - texlive-fp
+  - texlive-fpl
+  - texlive-geometry
+  - texlive-glyphlist
+  - texlive-graphics
+  - texlive-graphics-cfg
+  - texlive-graphics-def
+  - texlive-gsftopk
+  - texlive-helvetic
+  - texlive-hyperref
+  - texlive-hyphen-base
+  - texlive-hyphenex
+  - texlive-hyph-utf8
+  - texlive-ifetex
+  - texlive-ifluatex
+  - texlive-ifmtarg
+  - texlive-ifplatform
+  - texlive-iftex
+  - texlive-ifxetex
+  - texlive-import
+  - texlive-index
+  - texlive-jknapltx
+  - texlive-kastrup
+  - texlive-knuth-lib
+  - texlive-knuth-local
+  - texlive-koma-script
+  - texlive-kpathsea
+  - texlive-l3backend
+  - texlive-l3experimental
+  - texlive-l3kernel
+  - texlive-l3packages
+  - texlive-latex
+  - texlive-latex-base-dev
+  - texlive-latex-bin-dev
+  - texlive-latexbug
+  - texlive-latexconfig
+  - texlive-latexdiff
+  - texlive-latex-fonts
+  - texlive-latex-graphics-dev
+  - texlive-linegoal
+  - texlive-lineno
+  - texlive-listings
+  - texlive-lm
+  - texlive-lm-math
+  - texlive-ltabptch
+  - texlive-ltxmisc
+  - texlive-lua-alt-getopt
+  - texlive-luabidi
+  - texlive-lualatex-math
+  - texlive-lualibs
+  - texlive-luaotfload
+  - texlive-luatex
+  - texlive-luatexbase
+  - texlive-lwarp
+  - texlive-makecmds
+  - texlive-makeindex
+  - texlive-manfnt-font
+  - texlive-marginnote
+  - texlive-marvosym
+  - texlive-mathpazo
+  - texlive-mathspec
+  - texlive-mathtools
+  - texlive-mdwtools
+  - texlive-memoir
+  - texlive-metafont
+  - texlive-metalogo
+  - texlive-mflogo
+  - texlive-mflogo-font
+  - texlive-mfnfss
+  - texlive-mfware
+  - texlive-microtype
+  - texlive-mnsymbol
+  - texlive-mparhack
+  - texlive-mptopdf
+  - texlive-ms
+  - texlive-multido
+  - texlive-multirow
+  - texlive-musixtex
+  - texlive-natbib
+  - texlive-ncntrsbk
+  - texlive-newunicodechar
+  - texlive-ntgclass
+  - texlive-oberdiek
+  - texlive-palatino
+  - texlive-paralist
+  - texlive-parallel
+  - texlive-parskip
+  - texlive-passivetex
+  - texlive-pdfpages
+  - texlive-pdftex
+  - texlive-pgf
+  - texlive-placeins
+  - texlive-plain
+  - texlive-polyglossia
+  - texlive-powerdot
+  - texlive-preprint
+  - texlive-psfrag
+  - texlive-pslatex
+  - texlive-psnfss
+  - texlive-pspicture
+  - texlive-pst-3d
+  - texlive-pst-blur
+  - texlive-pst-coil
+  - texlive-pst-eps
+  - texlive-pst-fill
+  - texlive-pst-grad
+  - texlive-pst-math
+  - texlive-pst-node
+  - texlive-pst-ovl
+  - texlive-pst-pdf
+  - texlive-pst-plot
+  - texlive-pstricks
+  - texlive-pstricks-add
+  - texlive-pst-slpe
+  - texlive-pst-text
+  - texlive-pst-tools
+  - texlive-pst-tree
+  - texlive-pxfonts
+  - texlive-qstest
+  - texlive-ragged2e
+  - texlive-rcs
+  - texlive-realscripts
+  - texlive-rsfs
+  - texlive-sansmath
+  - texlive-sansmathaccent
+  - texlive-sauerj
+  - texlive-section
+  - texlive-sectsty
+  - texlive-seminar
+  - texlive-sepnum
+  - texlive-setspace
+  - texlive-showexpl
+  - texlive-soul
+  - texlive-subfig
+  - texlive-symbol
+  - texlive-tabu
+  - texlive-tetex
+  - texlive-tex
+  - texlive-tex-gyre
+  - texlive-tex-gyre-math
+  - texlive-tex-ini-files
+  - texlive-texlive-common-doc
+  - texlive-texlive-docindex
+  - texlive-texlive-en
+  - texlive-texlive.infra
+  - texlive-texlive-msg-translations
+  - texlive-texlive-scripts
+  - texlive-textcase
+  - texlive-thumbpdf
+  - texlive-times
+  - texlive-tipa
+  - texlive-titlesec
+  - texlive-tocloft
+  - texlive-tools
+  - texlive-translator
+  - texlive-trimspaces
+  - texlive-txfonts
+  - texlive-type1cm
+  - texlive-typehtml
+  - texlive-ucharcat
+  - texlive-ucs
+  - texlive-ulem
+  - texlive-underscore
+  - texlive-unicode-data
+  - texlive-unicode-math
+  - texlive-updmap-map
+  - texlive-url
+  - texlive-utopia
+  - texlive-varwidth
+  - texlive-wasy
+  - texlive-wasysym
+  - texlive-xcolor
+  - texlive-xdvi
+  - texlive-xetex
+  - texlive-xetexconfig
+  - texlive-xifthen
+  - texlive-xkeyval
+  - texlive-xltxtra
+  - texlive-xmltex
+  - texlive-xmltexconfig
+  - texlive-xtab
+  - texlive-xunicode
+  - texlive-zapfchan
+  - texlive-zapfding

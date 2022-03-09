@@ -1,0 +1,28 @@
+---
+# vim: filetype=yaml.ansible
+
+- name: Start installation of additional packages inside the Toolboxes [async]
+  command:      toolbox run --container {{ toolbox.name }} sudo dnf install --assumeyes {{ toolbox.package_groups | flatten | join(' ') }}
+  loop:         "{{ toolboxes }}"
+  loop_control:
+    loop_var:   toolbox
+    label:      "{{ toolbox.name }}"
+  when:         toolbox.package_groups is defined
+  changed_when: false
+  register:     async_dnf_install
+  async:        1800
+  poll:         0
+
+- name: Wait for all [async] tasks to finish
+  async_status:
+    jid:        "{{ dnf_install.ansible_job_id }}"
+  loop:         "{{ async_dnf_install.results }}"
+  loop_control:
+    loop_var:   dnf_install
+    label:      "{{ dnf_install.toolbox.name }}"
+  when:         dnf_install.toolbox.package_groups is defined
+  register:     async_wait
+  until:        async_wait.finished
+  delay:        3
+  retries:      600
+

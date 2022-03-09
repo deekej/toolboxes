@@ -1,0 +1,8 @@
+[redhat-exdtools]
+name=EXD Tools for Fedora $releasever (RPMs)
+baseurl=https://download.devel.redhat.com/rel-eng/RCMTOOLS/latest-RCMTOOLS-2-F-$releasever/compose/Everything/$basearch/os/
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-exd-internal
+enabled=1
+gpgcheck=1
+enabled_metadata=1
+skip_if_unavailable=True
