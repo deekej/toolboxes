@@ -203,6 +203,7 @@ packages_redhat:
   - python3-pip
   - rhpkg
   - rhpkg-stage
+  - rpmdevtools
   - krb5-workstation
   - pass
   - pass-otp
